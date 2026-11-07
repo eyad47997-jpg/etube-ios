@@ -1,0 +1,26 @@
+name: Build iPhone IPA
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - name: Unpack source project
+        run: python3 -m zipfile -e E-TUBE-iOS-Source.zip app
+      - name: Show Xcode version
+        run: xcodebuild -version
+      - name: Install project generator
+        run: command -v xcodegen >/dev/null || brew install xcodegen
+      - name: Build unsigned iPhone package
+        run: bash app/scripts/build-unsigned.sh
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: E-TUBE-iPhone-unsigned
+          path: app/build/E-TUBE-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 14
